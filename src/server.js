@@ -28,6 +28,7 @@ app.get('/api/health', (req, res) => {
 
 // 404 handler
 app.use((req, res) => {
+  console.log(`404 Not Found: ${req.originalUrl}`);
   res.status(404).json({ message: 'Route not found' });
 });
 

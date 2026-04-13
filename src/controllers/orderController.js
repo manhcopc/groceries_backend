@@ -160,7 +160,7 @@ exports.updateStatus = async (req, res) => {
     // Update status
     const result = await Order.updateStatus(id, status);
 
-    if (result.affectedRows === 0) {
+    if (result.rowCount === 0) {
       return res.status(400).json({ message: 'Failed to update order status' });
     }
 
@@ -212,7 +212,7 @@ exports.delete = async (req, res) => {
     // Delete order and restore stock
     const result = await Order.delete(id);
 
-    if (result.affectedRows === 0) {
+    if (result.rowCount === 0) {
       return res.status(400).json({ message: 'Failed to cancel order' });
     }
 

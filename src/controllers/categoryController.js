@@ -29,7 +29,7 @@ exports.create = async (req, res) => {
 
     res.status(201).json({
       message: 'Category created successfully',
-      categoryId: result.insertId,
+      categoryId: result.id,
       imageUrl
     });
   } catch (error) {
@@ -112,7 +112,7 @@ exports.update = async (req, res) => {
 
     res.json({
       message: 'Category updated successfully',
-      affectedRows: result.affectedRows,
+      affectedRows: result.rowCount,
       imageUrl
     });
   } catch (error) {

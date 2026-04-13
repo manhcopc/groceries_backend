@@ -43,7 +43,7 @@ exports.register = async (req, res) => {
 
     res.status(201).json({
       message: 'User registered successfully',
-      userId: result.insertId,
+      userId: result.id,
       avatarUrl
     });
   } catch (error) {

@@ -42,7 +42,7 @@ exports.create = async (req, res) => {
 
     res.status(201).json({
       message: 'Product created successfully',
-      productId: result.insertId,
+      productId: result.id,
       imageUrl
     });
   } catch (error) {
@@ -149,7 +149,7 @@ exports.update = async (req, res) => {
 
     res.json({
       message: 'Product updated successfully',
-      affectedRows: result.affectedRows,
+      affectedRows: result.rowCount,
       imageUrl
     });
   } catch (error) {
@@ -179,13 +179,13 @@ exports.updateStock = async (req, res) => {
 
     const result = await Product.updateStock(id, quantity_change);
 
-    if (result.affectedRows === 0) {
+    if (result.rowCount === 0) {
       return res.status(400).json({ message: 'Failed to update stock' });
     }
 
     res.json({
       message: 'Product stock updated successfully',
-      affectedRows: result.affectedRows,
+      affectedRows: result.rowCount,
       newStock: newStock
     });
   } catch (error) {

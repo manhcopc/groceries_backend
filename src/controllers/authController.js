@@ -6,9 +6,17 @@ exports.register = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ message: 'Username and password are required' });
+    // --- ĐOẠN CODE MỚI THÊM VÀO ---
+    const requiredFields = ['username', 'password'];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({ 
+        message: 'Vui lòng cung cấp đầy đủ thông tin',
+        missingFields: missingFields // Sẽ trả về mảng ví dụ: ['password']
+      });
     }
+    // ------------------------------
 
     const existingUser = await User.findByUsername(username);
     if (existingUser) {
@@ -48,9 +56,17 @@ exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ message: 'Username and password are required' });
+    // --- ĐOẠN CODE MỚI THÊM VÀO ---
+    const requiredFields = ['username', 'password'];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({ 
+        message: 'Vui lòng cung cấp đầy đủ thông tin đăng nhập',
+        missingFields: missingFields 
+      });
     }
+    // ------------------------------
 
     const user = await User.findByUsername(username);
     if (!user) {

@@ -4,7 +4,7 @@ const { uploadToCloudinary, deleteFromCloudinary, extractPublicIdFromUrl } = req
 exports.create = async (req, res) => {
   try {
     const { name, description } = req.body;
-
+    // console.log('Create category request body:', req.body);
     if (!name) {
       return res.status(400).json({ message: 'Category name is required' });
     }

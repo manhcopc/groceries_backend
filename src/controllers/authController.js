@@ -4,19 +4,21 @@ const { uploadToCloudinary, deleteFromCloudinary, extractPublicIdFromUrl } = req
 
 exports.register = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, role } = req.body;
 
-    // --- ĐOẠN CODE MỚI THÊM VÀO ---
     const requiredFields = ['username', 'password'];
     const missingFields = requiredFields.filter(field => !req.body[field]);
 
     if (missingFields.length > 0) {
       return res.status(400).json({ 
         message: 'Vui lòng cung cấp đầy đủ thông tin',
-        missingFields: missingFields // Sẽ trả về mảng ví dụ: ['password']
+        missingFields: missingFields
       });
     }
-    // ------------------------------
+
+    // Validate role if provided
+    const validRoles = ['user', 'admin'];
+    const userRole = role && validRoles.includes(role) ? role : 'user';
 
     const existingUser = await User.findByUsername(username);
     if (existingUser) {
@@ -26,6 +28,7 @@ exports.register = async (req, res) => {
     let avatarUrl = null;
 
     if (req.file) {
+      console.log('Received file:', req.file.originalname, 'size:', req.file.size);
       try {
         const uploadResult = await uploadToCloudinary(
           req.file.buffer,
@@ -39,11 +42,12 @@ exports.register = async (req, res) => {
       }
     }
 
-    const result = await User.create(username, password, 'user', avatarUrl);
+    const result = await User.create(username, password, userRole, avatarUrl);
 
     res.status(201).json({
       message: 'User registered successfully',
       userId: result.id,
+      role: userRole,
       avatarUrl
     });
   } catch (error) {
@@ -56,7 +60,6 @@ exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // --- ĐOẠN CODE MỚI THÊM VÀO ---
     const requiredFields = ['username', 'password'];
     const missingFields = requiredFields.filter(field => !req.body[field]);
 
@@ -66,7 +69,6 @@ exports.login = async (req, res) => {
         missingFields: missingFields 
       });
     }
-    // ------------------------------
 
     const user = await User.findByUsername(username);
     if (!user) {
@@ -196,6 +198,62 @@ exports.updateProfile = async (req, res) => {
     });
   } catch (error) {
     console.error('Update profile error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// Endpoint để tạo admin (chỉ admin hiện tại mới có thể tạo admin mới)
+exports.registerAdmin = async (req, res) => {
+  try {
+    // Kiểm tra người yêu cầu có phải admin không
+    if (req.userRole !== 'admin') {
+      return res.status(403).json({ message: 'Only admins can create new admin accounts' });
+    }
+
+    const { username, password } = req.body;
+
+    const requiredFields = ['username', 'password'];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({ 
+        message: 'Vui lòng cung cấp đầy đủ thông tin',
+        missingFields: missingFields
+      });
+    }
+
+    const existingUser = await User.findByUsername(username);
+    if (existingUser) {
+      return res.status(409).json({ message: 'Username already exists' });
+    }
+
+    let avatarUrl = null;
+
+    if (req.file) {
+      try {
+        const uploadResult = await uploadToCloudinary(
+          req.file.buffer,
+          req.file.originalname,
+          'grocery/avatars'
+        );
+        avatarUrl = uploadResult.secure_url;
+      } catch (uploadError) {
+        console.error('Avatar upload error:', uploadError);
+        return res.status(400).json({ message: 'Failed to upload avatar' });
+      }
+    }
+
+    const result = await User.create(username, password, 'admin', avatarUrl);
+
+    res.status(201).json({
+      message: 'Admin account created successfully',
+      userId: result.id,
+      role: 'admin',
+      avatarUrl,
+      createdBy: req.userId
+    });
+  } catch (error) {
+    console.error('Register admin error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
